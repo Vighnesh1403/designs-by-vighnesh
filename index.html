@@ -234,8 +234,8 @@
           </p>
           <!-- Like Button -->
           <div class="portfolio-like d-flex align-items-center mt-2">
-            <button id="portfolioLikeBtn" class="like-btn">❤️ Like</button>
-            <span id="portfolioLikeCount" class="like-count ms-2">0 Likes</span>
+            <button id="likeBtn" class="like-btn">❤️ Like</button>
+            <span id="likeCount" class="like-count ms-2">0 Likes</span>
           </div>
         </div>
         <!-- Popup Message -->
@@ -411,6 +411,46 @@ portfolioLikeBtn.addEventListener('click', () => {
   portfolioPopup.classList.add('show');
   setTimeout(() => portfolioPopup.classList.remove('show'), 2500);
 });
+</script>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
+    authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
+    databaseURL: "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "portfoliofeedback-f61e9",
+    storageBucket: "portfoliofeedback-f61e9.firebasestorage.app",
+    messagingSenderId: "1020985103627",
+    appId: "1:1020985103627:web:8598feaa4dcbd84b567e0e",
+    measurementId: "G-BS0M448148"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Like Button Functionality
+  const likeBtn = document.getElementById("likeBtn");
+  const likeCount = document.getElementById("likeCount");
+
+  // Reference to your likes in the database
+  const likeRef = ref(db, "likes/casestudy1");
+
+  // Listen for real-time updates
+  onValue(likeRef, (snapshot) => {
+    const count = snapshot.val() || 0;
+    likeCount.textContent = `${count} Likes`;
+  });
+
+  // Increment likes on button click
+  likeBtn.addEventListener("click", () => {
+    runTransaction(likeRef, (current) => (current || 0) + 1);
+  });
 </script>
 </body>
 </html>
