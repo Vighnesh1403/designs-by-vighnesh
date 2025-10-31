@@ -592,3 +592,55 @@ textarea {
   height: 100px;
   resize: none;
 }
+
+
+/* responsive */
+
+.project-view {
+  position: relative;
+  padding-top: 100px; /* Adjust based on your hero height */
+}
+
+ aside.col-lg-4 {
+  position: sticky;
+  top: 100px; /* same as navbar/hero offset */
+  align-self: flex-start;
+  height: fit-content;
+}
+
+ aside.col-lg-3 {
+  position: sticky;
+  top: 100px; /* same as navbar/hero offset */
+  align-self: flex-start;
+  height: fit-content;
+}
+
+
+.yellow-hover :hover {
+  background-color: #94430C;
+}
+/* responsive */
+
+@media screen and (max-width: 991px) {
+  .project-view {
+  position: relative;
+  padding-top: 100px; /* Adjust based on your hero height */
+}
+
+ aside.col-lg-4 {
+  position: relative;
+  top: 0; /* same as navbar/hero offset */
+  margin-bottom: 1rem;
+}
+
+main {
+  margin-top: 2rem;
+}
+
+aside.col-lg-3 {
+  position: relative;
+  top: 0; /* same as navbar/hero offset */
+  margin-bottom: 1rem;
+}
+
+}
