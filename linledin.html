@@ -225,7 +225,8 @@
           <form id="feedbackForm" class="feedback-form">
             <div class="mb-3">
               <label for="reviewText" class="form-label">I would love to hear your Review / Feedback</label>
-              <textarea id="reviewText" class="form-control" rows="3" placeholder="Write your review here..." required></textarea>
+              <input type="email" class=" mb-2" type="text" placeholder="Enter your Email" required style="border-radius: 8px; background-color: white; width: 100%;">
+              <textarea id="reviewText" class="" rows="3" placeholder="Write your review here..." required style="border-radius: 8px; background-color: white; width: 100%;"></textarea>
             </div>
             <button type="submit" class="btn-icon-text" id="reviewPopup">Submit Feedback</button>
           </form>
@@ -303,37 +304,37 @@
 <!-- likes & review on real time -->
 
 <script type="module">
-  // single import + single initializeApp
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import {
     getDatabase,
     ref,
     onValue,
     runTransaction,
-    push
+    push,
+    get,
+    child,
   } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-  // Firebase config (your project)
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
     authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
-    databaseURL: "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL:
+      "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "portfoliofeedback-f61e9",
     storageBucket: "portfoliofeedback-f61e9.firebasestorage.app",
     messagingSenderId: "1020985103627",
     appId: "1:1020985103627:web:8598feaa4dcbd84b567e0e",
-    measurementId: "G-BS0M448148"
+    measurementId: "G-BS0M448148",
   };
 
-  // Initialize once
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
   /* ---------------------------
-     Config per-case-study (change this per page)
-     Use a short slug without spaces, e.g. "location-management"
+     Config per-case-study (change per page)
   ----------------------------*/
-  const caseStudyName = "linkedIn"; // ← change per page
+  const caseStudyName = "linkedIn"; // ← change this per page
 
   /* ---------------------------
      Likes setup
@@ -342,7 +343,6 @@
   const likeBtn = document.getElementById("likeBtn");
   const likeCount = document.getElementById("likeCount");
 
-  // protect from missing elements (helps avoid runtime errors)
   if (likeBtn && likeCount) {
     const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
 
@@ -351,7 +351,6 @@
       likeBtn.textContent = "💖 Liked";
     }
 
-    // realtime update of count
     onValue(likeRef, (snapshot) => {
       const count = snapshot.val() || 0;
       likeCount.textContent = `${count} Likes`;
@@ -359,10 +358,7 @@
 
     likeBtn.addEventListener("click", () => {
       const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
-      if (alreadyLiked) {
-        // optionally toggle UX instead of alert
-        return;
-      }
+      if (alreadyLiked) return;
 
       runTransaction(likeRef, (current) => (current || 0) + 1);
       localStorage.setItem(`liked_${caseStudyName}`, "true");
@@ -372,34 +368,51 @@
   }
 
   /* ---------------------------
-     Feedback setup
+     Feedback setup (with email)
   ----------------------------*/
   const feedbackRef = ref(db, `feedback/${caseStudyName}`);
   const feedbackForm = document.getElementById("feedbackForm");
+  const emailInput = feedbackForm?.querySelector('input[type="email"]');
   const reviewText = document.getElementById("reviewText");
-  // ensure the popup id matches the element in your HTML
-  const popup = document.getElementById("portfolioPopup") || document.getElementById("reviewPopup");
+  const popup =
+    document.getElementById("portfolioPopup") ||
+    document.getElementById("reviewPopup");
 
-  if (feedbackForm && reviewText) {
-    feedbackForm.addEventListener("submit", (e) => {
+  if (feedbackForm && reviewText && emailInput) {
+    feedbackForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      const email = emailInput.value.trim();
       const message = reviewText.value.trim();
-      if (!message) return;
+      if (!email || !message) return;
 
-      const feedbackData = {
-        message,
-        date: new Date().toLocaleString()
-      };
+      try {
+        // Check if this email already submitted feedback
+        const snapshot = await get(feedbackRef);
+        let alreadySubmitted = false;
 
-      push(feedbackRef, feedbackData)
-        .then(() => {
-          reviewText.value = "";
-          if (popup) showPopup();
-        })
-        .catch((err) => {
-          console.error("Error saving feedback:", err);
+        snapshot.forEach((child) => {
+          if (child.val().email === email) alreadySubmitted = true;
         });
+
+        if (alreadySubmitted) {
+          alert("You’ve already submitted your feedback. Thank you!");
+          return;
+        }
+
+        // Save feedback
+        const feedbackData = {
+          email,
+          message,
+          date: new Date().toLocaleString(),
+        };
+
+        await push(feedbackRef, feedbackData);
+        feedbackForm.reset();
+        if (popup) showPopup();
+      } catch (err) {
+        console.error("Error saving feedback:", err);
+      }
     });
   }
 
@@ -407,7 +420,6 @@
     if (!popup) return;
     popup.style.display = "block";
     popup.style.opacity = "1";
-
     setTimeout(() => {
       popup.style.opacity = "0";
       setTimeout(() => (popup.style.display = "none"), 500);
@@ -415,34 +427,39 @@
   }
 
   /* ---------------------------
-     OPTIONAL: show incoming reviews live (append to a container)
-     If you want live display, create an element with id="reviewsList"
+     Live review display (optional)
   ----------------------------*/
   const reviewsList = document.getElementById("reviewsList");
   if (reviewsList) {
-    // subscribe to feedback changes and render
     onValue(feedbackRef, (snapshot) => {
       reviewsList.innerHTML = "";
       snapshot.forEach((childSnap) => {
         const data = childSnap.val();
         const div = document.createElement("div");
         div.className = "review-item p-2 rounded-3 mb-2 bg-light";
-        div.innerHTML = `<strong>${escapeHtml(data.name || "Anonymous")}</strong>
-                         <p class="mb-1">${escapeHtml(data.message)}</p>
-                         <small class="text-muted">${escapeHtml(data.date)}</small>`;
+        div.innerHTML = `
+          <strong>${escapeHtml(data.email || "Anonymous")}</strong>
+          <p class="mb-1">${escapeHtml(data.message)}</p>
+          <small class="text-muted">${escapeHtml(data.date)}</small>`;
         reviewsList.prepend(div);
       });
     });
   }
 
-  // small helper to avoid injecting raw HTML
   function escapeHtml(str) {
     return String(str || "").replace(/[&<>"']/g, (s) => {
-      const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      const map = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      };
       return map[s];
     });
   }
 </script>
+
 
 </body>
 </html>
