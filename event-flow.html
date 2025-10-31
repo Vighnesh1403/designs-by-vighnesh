@@ -262,7 +262,8 @@
           <form id="feedbackForm" class="feedback-form">
             <div class="mb-3">
               <label for="reviewText" class="form-label">I would love to hear your Review / Feedback</label>
-              <textarea id="reviewText" class="form-control" rows="3" placeholder="Write your review here..." required></textarea>
+              <input type="email" class=" mb-2" type="text" placeholder="Enter your Email" required style="border-radius: 8px; background-color: white; width: 100%;">
+              <textarea id="reviewText" class="" rows="3" placeholder="Write your review here..." required style="border-radius: 8px; background-color: white; width: 100%;"></textarea>
             </div>
             <button type="submit" class="btn-icon-text">Submit Feedback</button>
           </form>
@@ -530,83 +531,163 @@ The event flow further streamlines the post-booking process, including raw data 
   <!-- 
   feedback section -->
 
-  <script>
-  
-  const feedbackForm = document.getElementById('feedbackForm');
-  const thankMsg = document.getElementById('thankMsg');
-
-  
-
-  feedbackForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-
-  const popup = document.getElementById('popupMsg');
-  popup.classList.add('show'); // Show popup
-
-  feedbackForm.reset();
-
-  // Hide popup after 3 seconds
-  setTimeout(() => {
-    popup.classList.remove('show');
-  }, 3000);
-});
-</script>
-
-<!-- likes on real time -->
+<!-- likes & review on real time -->
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+  import {
+    getDatabase,
+    ref,
+    onValue,
+    runTransaction,
+    push,
+    get,
+    child,
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
     authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
-    databaseURL: "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL:
+      "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "portfoliofeedback-f61e9",
     storageBucket: "portfoliofeedback-f61e9.firebasestorage.app",
     messagingSenderId: "1020985103627",
     appId: "1:1020985103627:web:8598feaa4dcbd84b567e0e",
-    measurementId: "G-BS0M448148"
+    measurementId: "G-BS0M448148",
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // unique ID for each case study
-  const caseStudyName = "Photography Event Management"; // change per page
-  const likeRef = ref(db, `likes/${caseStudyName}`);
+  /* ---------------------------
+     Config per-case-study (change per page)
+  ----------------------------*/
+  const caseStudyName = "Photography Event Booking"; // ← change this per page
 
+  /* ---------------------------
+     Likes setup
+  ----------------------------*/
+  const likeRef = ref(db, `likes/${caseStudyName}`);
   const likeBtn = document.getElementById("likeBtn");
   const likeCount = document.getElementById("likeCount");
 
-  // check if user already liked (from localStorage)
-  const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
+  if (likeBtn && likeCount) {
+    const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
 
-  // style button if already liked
-  if (hasLiked) {
-    likeBtn.classList.add("liked");
-    likeBtn.textContent = "💖 Liked";
-  }
-
-  // update like count in real time
-  onValue(likeRef, (snapshot) => {
-    const count = snapshot.val() || 0;
-    likeCount.textContent = `${count} Likes`;
-  });
-
-  // handle click
-  likeBtn.addEventListener("click", () => {
-    const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
-    if (alreadyLiked) {
-      alert("You already liked this!");
-      return;
+    if (hasLiked) {
+      likeBtn.classList.add("liked");
+      likeBtn.textContent = "💖 Liked";
     }
 
-    runTransaction(likeRef, (current) => (current || 0) + 1);
-    localStorage.setItem(`liked_${caseStudyName}`, true);
-    likeBtn.classList.add("liked");
-    likeBtn.textContent = "💖 Liked";
-  });
+    onValue(likeRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      likeCount.textContent = `${count} Likes`;
+    });
+
+    likeBtn.addEventListener("click", () => {
+      const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
+      if (alreadyLiked) return;
+
+      runTransaction(likeRef, (current) => (current || 0) + 1);
+      localStorage.setItem(`liked_${caseStudyName}`, "true");
+      likeBtn.classList.add("liked");
+      likeBtn.textContent = "💖 Liked";
+    });
+  }
+
+  /* ---------------------------
+     Feedback setup (with email)
+  ----------------------------*/
+  const feedbackRef = ref(db, `feedback/${caseStudyName}`);
+  const feedbackForm = document.getElementById("feedbackForm");
+  const emailInput = feedbackForm?.querySelector('input[type="email"]');
+  const reviewText = document.getElementById("reviewText");
+  const popup =
+    document.getElementById("portfolioPopup") ||
+    document.getElementById("reviewPopup");
+
+  if (feedbackForm && reviewText && emailInput) {
+    feedbackForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const message = reviewText.value.trim();
+      if (!email || !message) return;
+
+      try {
+        // Check if this email already submitted feedback
+        const snapshot = await get(feedbackRef);
+        let alreadySubmitted = false;
+
+        snapshot.forEach((child) => {
+          if (child.val().email === email) alreadySubmitted = true;
+        });
+
+        if (alreadySubmitted) {
+          alert("You’ve already submitted your feedback. Thank you!");
+          return;
+        }
+
+        // Save feedback
+        const feedbackData = {
+          email,
+          message,
+          date: new Date().toLocaleString(),
+        };
+
+        await push(feedbackRef, feedbackData);
+        feedbackForm.reset();
+        if (popup) showPopup();
+      } catch (err) {
+        console.error("Error saving feedback:", err);
+      }
+    });
+  }
+
+  function showPopup() {
+    if (!popup) return;
+    popup.style.display = "block";
+    popup.style.opacity = "1";
+    setTimeout(() => {
+      popup.style.opacity = "0";
+      setTimeout(() => (popup.style.display = "none"), 500);
+    }, 2000);
+  }
+
+  /* ---------------------------
+     Live review display (optional)
+  ----------------------------*/
+  const reviewsList = document.getElementById("reviewsList");
+  if (reviewsList) {
+    onValue(feedbackRef, (snapshot) => {
+      reviewsList.innerHTML = "";
+      snapshot.forEach((childSnap) => {
+        const data = childSnap.val();
+        const div = document.createElement("div");
+        div.className = "review-item p-2 rounded-3 mb-2 bg-light";
+        div.innerHTML = `
+          <strong>${escapeHtml(data.email || "Anonymous")}</strong>
+          <p class="mb-1">${escapeHtml(data.message)}</p>
+          <small class="text-muted">${escapeHtml(data.date)}</small>`;
+        reviewsList.prepend(div);
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, (s) => {
+      const map = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      };
+      return map[s];
+    });
+  }
 </script>
 </body>
 </html>
