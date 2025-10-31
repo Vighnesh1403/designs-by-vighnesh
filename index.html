@@ -439,7 +439,7 @@ portfolioLikeBtn.addEventListener('click', () => {
   const likeCount = document.getElementById("likeCount");
 
   // Reference to your likes in the database
-  const likeRef = ref(db, "likes/casestudy1");
+  const likeRef = ref(db, "likes/portfolio");
 
   // Listen for real-time updates
   onValue(likeRef, (snapshot) => {
