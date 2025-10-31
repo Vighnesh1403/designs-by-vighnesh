@@ -644,3 +644,10 @@ aside.col-lg-3 {
 }
 
 }
+
+@media screen and (max-width: 480px) {
+  .main-section {
+    margin-top: 7rem;
+  }
+}
+
