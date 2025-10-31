@@ -274,7 +274,7 @@
     </div>
   </div>
 
-   <div id="reviewPopup" class="popup-msg">❤️ Thanks for your feedback!</div>
+   <div id="portfolioPopup" class="popup-msg">❤️ Thanks for your feedback!</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -300,13 +300,20 @@
   <!-- 
   feedback section -->
 
-<!-- likes on real time -->
+<!-- likes & review on real time -->
 
 <script type="module">
+  // single import + single initializeApp
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+  import {
+    getDatabase,
+    ref,
+    onValue,
+    runTransaction,
+    push
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-  // Your Firebase config
+  // Firebase config (your project)
   const firebaseConfig = {
     apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
     authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
@@ -318,45 +325,86 @@
     measurementId: "G-BS0M448148"
   };
 
-  // Initialize Firebase
+  // Initialize once
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Change this per case study page
-  const caseStudyName = "casestudy1";
-  const feedbackRef = ref(db, `feedback/${caseStudyName}`);
+  /* ---------------------------
+     Config per-case-study (change this per page)
+     Use a short slug without spaces, e.g. "location-management"
+  ----------------------------*/
+  const caseStudyName = "location-management"; // ← change per page
 
-  // Elements
+  /* ---------------------------
+     Likes setup
+  ----------------------------*/
+  const likeRef = ref(db, `likes/${caseStudyName}`);
+  const likeBtn = document.getElementById("likeBtn");
+  const likeCount = document.getElementById("likeCount");
+
+  // protect from missing elements (helps avoid runtime errors)
+  if (likeBtn && likeCount) {
+    const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
+
+    if (hasLiked) {
+      likeBtn.classList.add("liked");
+      likeBtn.textContent = "💖 Liked";
+    }
+
+    // realtime update of count
+    onValue(likeRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      likeCount.textContent = `${count} Likes`;
+    });
+
+    likeBtn.addEventListener("click", () => {
+      const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
+      if (alreadyLiked) {
+        // optionally toggle UX instead of alert
+        return;
+      }
+
+      runTransaction(likeRef, (current) => (current || 0) + 1);
+      localStorage.setItem(`liked_${caseStudyName}`, "true");
+      likeBtn.classList.add("liked");
+      likeBtn.textContent = "💖 Liked";
+    });
+  }
+
+  /* ---------------------------
+     Feedback setup
+  ----------------------------*/
+  const feedbackRef = ref(db, `feedback/${caseStudyName}`);
   const feedbackForm = document.getElementById("feedbackForm");
   const reviewText = document.getElementById("reviewText");
-  const popup = document.getElementById("reviewPopup");
+  // ensure the popup id matches the element in your HTML
+  const popup = document.getElementById("portfolioPopup") || document.getElementById("reviewPopup");
 
-  // Submit feedback
-  feedbackForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+  if (feedbackForm && reviewText) {
+    feedbackForm.addEventListener("submit", (e) => {
+      e.preventDefault();
 
-    const message = reviewText.value.trim();
+      const message = reviewText.value.trim();
+      if (!message) return;
 
-    if (message) {
       const feedbackData = {
-        message: message,
+        message,
         date: new Date().toLocaleString()
       };
 
-      // Push to Firebase
       push(feedbackRef, feedbackData)
         .then(() => {
-          reviewText.value = ""; // clear input
-          showPopup(); // show thank-you message
+          reviewText.value = "";
+          if (popup) showPopup();
         })
-        .catch((error) => {
-          console.error("Error saving feedback:", error);
+        .catch((err) => {
+          console.error("Error saving feedback:", err);
         });
-    }
-  });
+    });
+  }
 
-  // Show popup animation
   function showPopup() {
+    if (!popup) return;
     popup.style.display = "block";
     popup.style.opacity = "1";
 
@@ -364,6 +412,35 @@
       popup.style.opacity = "0";
       setTimeout(() => (popup.style.display = "none"), 500);
     }, 2000);
+  }
+
+  /* ---------------------------
+     OPTIONAL: show incoming reviews live (append to a container)
+     If you want live display, create an element with id="reviewsList"
+  ----------------------------*/
+  const reviewsList = document.getElementById("reviewsList");
+  if (reviewsList) {
+    // subscribe to feedback changes and render
+    onValue(feedbackRef, (snapshot) => {
+      reviewsList.innerHTML = "";
+      snapshot.forEach((childSnap) => {
+        const data = childSnap.val();
+        const div = document.createElement("div");
+        div.className = "review-item p-2 rounded-3 mb-2 bg-light";
+        div.innerHTML = `<strong>${escapeHtml(data.name || "Anonymous")}</strong>
+                         <p class="mb-1">${escapeHtml(data.message)}</p>
+                         <small class="text-muted">${escapeHtml(data.date)}</small>`;
+        reviewsList.prepend(div);
+      });
+    });
+  }
+
+  // small helper to avoid injecting raw HTML
+  function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, (s) => {
+      const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return map[s];
+    });
   }
 </script>
 
