@@ -256,9 +256,7 @@
           <h2 class="side-heading">Share Your Feedback</h2>
           <div class="p-3 bg-white rounded-4 left-boxes">
           <div class="feedback-like d-flex align-items-center mb-4">
-            <button id="likeBtn" class="like-btn">
-              ❤️ Like
-            </button>
+            <button id="likeBtn" class="like-btn">❤️ Like</button>
             <span id="likeCount" class="like-count ms-2">0 Likes</span>
           </div>
           <form id="feedbackForm" class="feedback-form">
@@ -533,19 +531,11 @@ The event flow further streamlines the post-booking process, including raw data 
   feedback section -->
 
   <script>
-  const likeBtn = document.getElementById('likeBtn');
-  const likeCount = document.getElementById('likeCount');
+  
   const feedbackForm = document.getElementById('feedbackForm');
   const thankMsg = document.getElementById('thankMsg');
 
-  let count = 0;
-
-  likeBtn.addEventListener('click', () => {
-    count++;
-    likeCount.textContent = `${count} ${count === 1 ? 'Like' : 'Likes'}`;
-    likeBtn.disabled = true;
-    likeBtn.style.opacity = '0.6';
-  });
+  
 
   feedbackForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -560,6 +550,63 @@ The event flow further streamlines the post-booking process, including raw data 
     popup.classList.remove('show');
   }, 3000);
 });
+</script>
+
+<!-- likes on real time -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
+    authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
+    databaseURL: "https://portfoliofeedback-f61e9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "portfoliofeedback-f61e9",
+    storageBucket: "portfoliofeedback-f61e9.firebasestorage.app",
+    messagingSenderId: "1020985103627",
+    appId: "1:1020985103627:web:8598feaa4dcbd84b567e0e",
+    measurementId: "G-BS0M448148"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // unique ID for each case study
+  const caseStudyName = "Photography Event Management"; // change per page
+  const likeRef = ref(db, `likes/${caseStudyName}`);
+
+  const likeBtn = document.getElementById("likeBtn");
+  const likeCount = document.getElementById("likeCount");
+
+  // check if user already liked (from localStorage)
+  const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
+
+  // style button if already liked
+  if (hasLiked) {
+    likeBtn.classList.add("liked");
+    likeBtn.textContent = "💖 Liked";
+  }
+
+  // update like count in real time
+  onValue(likeRef, (snapshot) => {
+    const count = snapshot.val() || 0;
+    likeCount.textContent = `${count} Likes`;
+  });
+
+  // handle click
+  likeBtn.addEventListener("click", () => {
+    const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
+    if (alreadyLiked) {
+      alert("You already liked this!");
+      return;
+    }
+
+    runTransaction(likeRef, (current) => (current || 0) + 1);
+    localStorage.setItem(`liked_${caseStudyName}`, true);
+    likeBtn.classList.add("liked");
+    likeBtn.textContent = "💖 Liked";
+  });
 </script>
 </body>
 </html>
