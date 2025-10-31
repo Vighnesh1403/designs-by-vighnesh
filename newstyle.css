@@ -517,6 +517,11 @@ footer h1 {
   border-color: #ff5c5c;
 }
 
+.like-btn.liked {
+  color: #ff4081; /* glowing pink */
+  text-shadow: 0 0 10px #ff4081;
+}
+
 .like-count {
   font-size: 0.95rem;
   color: #444;
