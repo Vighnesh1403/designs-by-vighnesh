@@ -227,7 +227,7 @@
               <label for="reviewText" class="form-label">I would love to hear your Review / Feedback</label>
               <textarea id="reviewText" class="form-control" rows="3" placeholder="Write your review here..." required></textarea>
             </div>
-            <button type="submit" class="btn-icon-text">Submit Feedback</button>
+            <button type="submit" class="btn-icon-text" id="reviewPopup">Submit Feedback</button>
           </form>
           </div>
       </aside>
@@ -274,6 +274,8 @@
     </div>
   </div>
 
+   <div id="reviewPopup" class="popup-msg">❤️ Thanks for your feedback!</div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
   const items = document.querySelectorAll(".tag-item");
@@ -298,34 +300,13 @@
   <!-- 
   feedback section -->
 
-  <script>
-  
-  const feedbackForm = document.getElementById('feedbackForm');
-  const thankMsg = document.getElementById('thankMsg');
-
-  
-
-  feedbackForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-
-  const popup = document.getElementById('popupMsg');
-  popup.classList.add('show'); // Show popup
-
-  feedbackForm.reset();
-
-  // Hide popup after 3 seconds
-  setTimeout(() => {
-    popup.classList.remove('show');
-  }, 3000);
-});
-</script>
-
 <!-- likes on real time -->
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
+  // Your Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAOXleTa98Q9kGU45NERJTURJOnfwH1uFA",
     authDomain: "portfoliofeedback-f61e9.firebaseapp.com",
@@ -337,44 +318,53 @@
     measurementId: "G-BS0M448148"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // unique ID for each case study
-  const caseStudyName = "LinkedIn- Compare-Companies"; // change per page
-  const likeRef = ref(db, `likes/${caseStudyName}`);
+  // Change this per case study page
+  const caseStudyName = "casestudy1";
+  const feedbackRef = ref(db, `feedback/${caseStudyName}`);
 
-  const likeBtn = document.getElementById("likeBtn");
-  const likeCount = document.getElementById("likeCount");
+  // Elements
+  const feedbackForm = document.getElementById("feedbackForm");
+  const reviewText = document.getElementById("reviewText");
+  const popup = document.getElementById("reviewPopup");
 
-  // check if user already liked (from localStorage)
-  const hasLiked = localStorage.getItem(`liked_${caseStudyName}`);
+  // Submit feedback
+  feedbackForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  // style button if already liked
-  if (hasLiked) {
-    likeBtn.classList.add("liked");
-    likeBtn.textContent = "💖 Liked";
-  }
+    const message = reviewText.value.trim();
 
-  // update like count in real time
-  onValue(likeRef, (snapshot) => {
-    const count = snapshot.val() || 0;
-    likeCount.textContent = `${count} Likes`;
-  });
+    if (message) {
+      const feedbackData = {
+        message: message,
+        date: new Date().toLocaleString()
+      };
 
-  // handle click
-  likeBtn.addEventListener("click", () => {
-    const alreadyLiked = localStorage.getItem(`liked_${caseStudyName}`);
-    if (alreadyLiked) {
-      alert("You already liked this!");
-      return;
+      // Push to Firebase
+      push(feedbackRef, feedbackData)
+        .then(() => {
+          reviewText.value = ""; // clear input
+          showPopup(); // show thank-you message
+        })
+        .catch((error) => {
+          console.error("Error saving feedback:", error);
+        });
     }
-
-    runTransaction(likeRef, (current) => (current || 0) + 1);
-    localStorage.setItem(`liked_${caseStudyName}`, true);
-    likeBtn.classList.add("liked");
-    likeBtn.textContent = "💖 Liked";
   });
+
+  // Show popup animation
+  function showPopup() {
+    popup.style.display = "block";
+    popup.style.opacity = "1";
+
+    setTimeout(() => {
+      popup.style.opacity = "0";
+      setTimeout(() => (popup.style.display = "none"), 500);
+    }, 2000);
+  }
 </script>
 
 </body>
