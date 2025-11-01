@@ -28,6 +28,10 @@ body:hover {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* subtle border */
 
   }
+
+  .nav-btn {
+    display: none;
+  }
 /* Button Styles */
 .btn-primary {
   padding: 0.6rem 1rem;
@@ -227,9 +231,11 @@ body:hover {
 .work-section {
   background-color: #fff;
   padding: 1rem;
+  border-radius: 1rem;
   border: 0.5px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
 }
 
 .work-section:hover {
@@ -283,6 +289,10 @@ h2,
   animation: fadeUp 0.8s ease both;
 }
 
+.hero {
+  margin-top: 1.5rem;
+}
+
 .hero h1 {
     font-family: 'Georgia' , sans-serif;
     margin-bottom: 1rem;
@@ -310,9 +320,13 @@ h2,
   width: auto;
   display: flex;
   justify-content: center;
-  padding: 5rem 5rem;
+  padding: 5vw 5vw;
   display: flex;
   align-items: center;
+  border-radius: 0.6rem;
+  background-color: #fff;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .video-container img, video {
@@ -649,5 +663,57 @@ aside.col-lg-3 {
   .main-section {
     margin-top: 7rem;
   }
+
+  body {
+    padding: 1vw 4vw;
+  }
+
+  .site-header {
+  padding: 0 4vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  background-color: #f7f3f0;
+  border: 1px solid #ebe5e1; /* subtle border */
+  border-radius: 0.5rem;
+  margin: 4vw 4vw;
+  width: -webkit-fill-available;
+  }
+
+
+.nav-btn {
+    display: flex;
+    margin-left: -2rem;
+    color: #fff;
+  }
+
+  .nav-btns-holder a {
+    display: none;
+  }
+
+  .hero {
+    margin-top: 7rem;
+  }
+
+  .hero h1 {
+    font-family: 'Georgia' , sans-serif;
+    margin-bottom: 1rem;
+}
+
+.hero h6 {
+  color: #666;
+  font-size:14px;
+  font-weight: 400;
+}
+
+.hero p {
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
+}
+
+
 }
 
