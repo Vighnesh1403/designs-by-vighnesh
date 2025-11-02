@@ -235,7 +235,8 @@ body:hover {
   border: 0.5px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: auto;
+  height: -webkit-fill-available;
+  margin-bottom: 2rem;
 }
 
 .work-section:hover {
@@ -633,6 +634,7 @@ textarea {
 .yellow-hover :hover {
   background-color: #94430C;
 }
+
 /* responsive */
 
 @media screen and (max-width: 991px) {
@@ -714,6 +716,39 @@ aside.col-lg-3 {
   font-weight: 400;
 }
 
+.gif-title-top {
+  top: 10px;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.work-section {
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.video-container {
+  padding: 0;
+  border: none;
+}
+
+.video-container img {
+  border-radius: 16px;
+  border: none;
+}
+
+.work-section-holder {
+  padding: 0;
+}
+
+.mobile-view {
+  max-width: 100%;
+}
+
+.aside-main-holder {
+  margin-top: 0.5rem;
+  margin: 0;
+}
 
 }
 
