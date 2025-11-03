@@ -519,6 +519,10 @@ footer h1 {
   color: #333;
 }
 
+.inside-main-text {
+  padding: 1rem;
+}
+
 /* === Feedback Section === */
 
 
@@ -638,6 +642,10 @@ textarea {
 
 .yellow-hover :hover {
   background-color: #94430C;
+}
+
+.contact-form {
+  margin-bottom: 0;
 }
 
 /* responsive */
@@ -786,6 +794,14 @@ footer {
  .mobile-view-dashboard img {
   border: 2px solid #333;
  }
+
+ .inside-main-text {
+  padding: 0;
+}
+
+.contact-form {
+  padding: 1rem;
+}
 
 }
 
