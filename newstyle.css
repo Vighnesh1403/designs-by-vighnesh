@@ -764,5 +764,28 @@ footer {
   font-size: 20px;
  }
 
+ .mobile-view {
+  background-color: #fff;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 5rem 2rem;
+ }
+
+ .mobile-view img {
+  width: 60%;
+  border: 2px solid #333;
+ }
+
+ .mobile-view-dashboard {
+  background-color: #fff;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 3rem 1rem;
+ }
+
+ .mobile-view-dashboard img {
+  border: 2px solid #333;
+ }
+
 }
 
