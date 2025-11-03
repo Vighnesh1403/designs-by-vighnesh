@@ -726,6 +726,10 @@ textarea {
 	margin-top:16px;
 }
 
+.like-section-msg {
+   font-size: 1.1rem;
+   font-weight: 400;
+}
 /* responsive */
 
 @media screen and (max-width: 991px) {
