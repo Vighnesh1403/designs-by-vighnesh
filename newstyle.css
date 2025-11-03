@@ -77,6 +77,24 @@ body:hover {
   transform: translateY(-2px);
 }
 
+
+/* === Animation Styles for Header Buttons === */
+.nav-btn, 
+.btn-icon-text {
+  transition: all 0.3s ease-in-out;
+}
+
+/* When menu is open */
+.nav-btn.shifted {
+  transform: translateX(13.5rem); /* move to where Send Message was */
+}
+
+.btn-icon-text.hide {
+  opacity: 0;
+  transform: translateX(13.5rem);
+  pointer-events: none;
+}
+
 /* Footer Icon */
 
  footer {
@@ -912,3 +930,58 @@ footer {
   }
 }
 
+/* === Mobile Menu === */
+.mobile-menu {
+  position: fixed;
+  left: 4vw;
+  right: 4vw;
+  top: calc(70px + 1rem); /* just below header */
+  background-color: #f7f3f0;
+  border: 1px solid #ebe5e1;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  z-index: 998;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  /* Animation state */
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+  transition: max-height 0.35s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mobile-menu.open {
+  max-height: 400px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Only show below 480px */
+@media (max-width: 480px) {
+  .mobile-menu {
+    display: flex;
+  }
+  
+}
+
+@media (max-width: 480px) {
+  .nav-btn {
+    display: block;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .nav-btns-holder {
+    display: none; /* hide the big menu on mobile */
+  }
+
+  .mobile-menu {
+    display: flex;
+  }
+}
