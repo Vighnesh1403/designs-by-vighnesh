@@ -932,6 +932,11 @@ footer {
     color: #ffffff;
     border-radius: 50px;
   }
+
+  .like-section-msg {
+   font-size: 0.8rem;
+   font-weight: 400;
+}
 }
 
 /* === Mobile Menu === */
