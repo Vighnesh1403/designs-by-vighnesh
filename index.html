@@ -25,8 +25,120 @@
 </head>
 <style>
 
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: #fffcfb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  transition: opacity 0.6s ease;
+}
+
+.preloader-content {
+  text-align: center;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tagline {
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+  font-family: 'georgia', sans-serif;
+}
+
+.reveal-text span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: letterReveal 0.6s ease forwards;
+}
+
+@keyframes letterReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.progress {
+  position: relative;
+  width: 80%;
+  height: 40%;
+  background: none;
+  margin: 20px auto 0;
+}
+
+
+
+.bar {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: #666;
+  border-radius: 10px;
+  transition: width 0.1s linear;
+}
+
+.cat {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  transform: translateX(0);
+}
+
+.cat img {
+  width: 200px;
+  height: auto;
+}
+
+#percent {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  font-size: 20px;
+  color: #000;
+  font-family: 'georgia', sans-serif;
+}
+
+.main-section {
+  display: none;
+}
 </style>
 <body data-case="portfolio">
+
+    <!-- Preloader -->
+<div id="preloader">
+  <div class="preloader-content">
+    <h1 class="reveal-text tagline">Welcome to My Portfolio...</h1>
+
+    <div class="progress">
+      <div class="bar"></div>
+      <div class="cat">
+        <img src="imgs/gifs/cat.gif" alt="Dancing Cat">
+      </div>
+      <span id="percent">0%</span>
+    </div>
+  </div>
+</div>
 
   <div class="container-fluid p-0 main-section">
 
@@ -385,6 +497,68 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/script.js"></script>
-  
+
+<script>
+let loader = document.getElementById("preloader");
+let main = document.querySelector(".main-section");
+let percent = document.getElementById("percent");
+let bar = document.querySelector(".bar");
+let cat = document.querySelector(".cat");
+
+if (!sessionStorage.getItem("preloaderShown")) {
+  let load = 0;
+
+  // Reduce interval for smoother updates
+  let interval = setInterval(() => {
+    load++;
+    percent.textContent = `${load}%`;
+
+    // Update bar width instantly (avoid transition lag)
+    bar.style.transition = "none";
+    bar.style.width = `${load}%`;
+
+    // Get actual container width dynamically
+    let progressWidth = document.querySelector(".progress").offsetWidth;
+
+    // Move both cat and percent together (minus ~25px to center cat)
+    let moveX = (progressWidth * load) / 100 - 25;
+
+    cat.style.transition = "none";
+    percent.style.transition = "none";
+
+    // Apply the same transform to both elements
+    cat.style.transform = `translateX(${moveX}px)`;
+    percent.style.transform = `translateX(${moveX}px)`;
+
+    // When load completes
+    if (load >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        loader.style.opacity = 0;
+        setTimeout(() => {
+          loader.style.display = "none";
+          main.style.display = "block";
+          main.classList.add("fade-in");
+          document.body.style.overflow = "auto";
+          sessionStorage.setItem("preloaderShown", "true");
+        }, 600);
+      }, 400);
+    }
+  }, 30); // faster refresh gives smoother motion
+} else {
+  loader.style.display = "none";
+  main.style.display = "block";
+  main.classList.add("fade-in");
+  document.body.style.overflow = "auto";
+}
+</script>
+
+<script>
+  const text = document.querySelector('.reveal-text');
+text.innerHTML = text.textContent
+  .split('')
+  .map((char, i) => `<span style="animation-delay:${i * 0.05}s">${char}</span>`)
+  .join('');
+</script>
 </body>
 </html>
