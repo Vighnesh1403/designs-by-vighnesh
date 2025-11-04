@@ -1,6 +1,6 @@
-// ===============================
+
 //  GLOBAL SCRIPTS (COMMON TO ALL PAGES)
-// ===============================
+
 document.addEventListener("DOMContentLoaded", () => {
   // ---------- NAV TOGGLE ----------
   const navToggle = document.getElementById("navToggle");
@@ -94,9 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ===============================
 //  FIREBASE FEATURES (LIKES + FEEDBACK)
-// ===============================
 
 // Using Firebase as module (import dynamically)
 (async function () {
