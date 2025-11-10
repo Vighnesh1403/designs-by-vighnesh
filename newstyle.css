@@ -244,6 +244,11 @@ body:hover {
   flex-direction: column;
 }
 
+.exp-detail h6 {
+  font-family: 'georgia', sans-serif;
+  font-size: 1.1rem;
+}
+
 .exp-detail p {
   font-weight: 400;
   font-size: 13px;
